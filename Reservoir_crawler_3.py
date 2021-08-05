@@ -13,6 +13,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from urllib3.packages.six import b
+from matplotlib.font_manager import FontProperties
+
 
 class Reservoir_data():
   webURL = "https://fhy.wra.gov.tw/reservoirpage_2011/storagecapacity.aspx?fbclid=IwAR0Umtyt_LvN6dMNeH5SKTsXTB0XyTUA974FClxePe8pLD-grqizWg5Gu1Y"
@@ -50,7 +52,7 @@ class Reservoir_data():
 
     #search and wait a second (literally)
     self.driver.find_element(By.ID, "ctl00_cphMain_btnQuery").click()
-    time.sleep(0.1)
+    time.sleep(0.3)
 
     '''印出所有水庫的資料
     self.table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
@@ -85,7 +87,7 @@ def data_generator(name, year, month, choice):
     time.sleep(0.5)
     del successor[0:3]
     del successor[4]
-    successor[choice - 1] = successor[choice - 1].replace(",", "")
+    successor[choice - 1] = successor[choice - 1].replace(",", "").replace("%","")
     data.append(float(successor[choice - 1]))
 
   return data
@@ -109,7 +111,8 @@ month = int(month)
 choice = int(choice)
 data = data_generator(name, year, month, choice)
 x = [i + 1 for i in range(calendar.mdays[month])]
-plt.rcParams['font.sans-serif'] = ['Noto Serif CJK TC']
+plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']
+plt.rcParams['axes.unicode_minus'] = False
 plt.title(name)
 plt.plot(x, data)
 plt.show()
