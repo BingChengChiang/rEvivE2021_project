@@ -96,14 +96,15 @@ name = input("Name: ")
 year = input("Year: ")
 month = input("Month: ")
 
-print('\t\n|choice | 資料種類　　|\t\n   \
-  | 1 | 集水區降雨量（毫米）　　|\t\n   \
-  | 2 | 進水量（萬立方公尺）　　|\t\n   \
-  | 3 | 出水量（萬立方公尺）　　|\t\n   \
-  | 4 | 與昨日水位差（公尺）　　|\t\n   \
-  | 5 | 水位（公尺）　　　　　　|\t\n   \
-  | 6 | 有效蓄水量（萬立方公尺）|\t\n   \
-  | 7 | 蓄水量百分比（％）　　　|\t\n')
+print('\t\n\
+|choice | 資料種類　　           |\n\
+|     1 | 集水區降雨量（毫米）　　|\n\
+|     2 | 進水量（萬立方公尺）　　|\n\
+|     3 | 出水量（萬立方公尺）　　|\n\
+|     4 | 與昨日水位差（公尺）　　|\n\
+|     5 | 水位（公尺）　　　　　　|\n\
+|     6 | 有效蓄水量（萬立方公尺）|\n\
+|     7 | 蓄水量百分比（％）　　　|\n')
 choice = input("Choice: ")
 
 year = int(year)
@@ -116,5 +117,5 @@ plt.rcParams['axes.unicode_minus'] = False
 plt.title(name)
 plt.plot(x, data)
 plt.show()
-print(x)
-print(data)
+# print(x)
+# print(data)
