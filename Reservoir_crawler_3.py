@@ -79,7 +79,7 @@ def data_generator(name, year, month, choice):
   #choice is from 1 to 7.
   
   data = []  
-  days = calendar.mdays[month]
+  days = calendar.monthrange(year, month)[1]
   original = Reservoir_data()
 
   for day in range(1, days + 1):
@@ -91,31 +91,32 @@ def data_generator(name, year, month, choice):
     data.append(float(successor[choice - 1]))
 
   return data
-  
+
+unit_list = ["毫米","萬立方公尺","萬立方公尺","公尺","公尺","萬立方公尺","%"]
+title_list = ["集水區降雨量","進水量","出水量","與昨日水位差","水位","有效蓄水量","蓄水量百分比"]
+
+
+
 name = input("Name: ")
 year = input("Year: ")
 month = input("Month: ")
 
-print('\t\n\
-|choice | 資料種類　　           |\n\
-|     1 | 集水區降雨量（毫米）　　|\n\
-|     2 | 進水量（萬立方公尺）　　|\n\
-|     3 | 出水量（萬立方公尺）　　|\n\
-|     4 | 與昨日水位差（公尺）　　|\n\
-|     5 | 水位（公尺）　　　　　　|\n\
-|     6 | 有效蓄水量（萬立方公尺）|\n\
-|     7 | 蓄水量百分比（％）　　　|\n')
+print('|choice | 資料種類')
+for i in range(7):
+  print('|     {} | {}({})'.format(i+1, title_list[i], unit_list[i]))
+
 choice = input("Choice: ")
 
 year = int(year)
 month = int(month)
 choice = int(choice)
 data = data_generator(name, year, month, choice)
-x = [i + 1 for i in range(calendar.mdays[month])]
+x = [i + 1 for i in range(calendar.monthrange(year, month)[1])]
+
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']
 plt.rcParams['axes.unicode_minus'] = False
-plt.title(name)
+plt.title(name + " {}年{}月 每日{}({})".format(year, month, title_list[choice-1], unit_list[choice-1]))
+plt.xlabel("天")
+plt.ylabel("{}({})".format(title_list[choice-1], unit_list[choice-1]))
 plt.plot(x, data)
 plt.show()
-# print(x)
-# print(data)
