@@ -14,109 +14,189 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from urllib3.packages.six import b
 from matplotlib.font_manager import FontProperties
+import tkinter as tk
+from tkinter import ttk
+from datetime import date, timedelta
+
+nameList = ['石門水庫', '翡翠水庫', '寶山第二水庫', '永和山水庫', '明德水庫', '鯉魚潭水庫', '德基水庫', '石岡壩', '霧社水庫', '日月潭水庫', '集集攔河堰', '湖山水庫', '仁義潭水庫', '白河水庫', '烏山頭水庫', '曾文水庫', '南化水庫', '阿公店水庫', '高屏溪攔河堰', '牡丹水庫']
+dayList = [i + 1 for i in range(31)]
+monthList = [i + 1 for i in range(12)]
+yearList = [i for i in range(2022,1969,-1)]
+unitList = ["毫米","萬立方公尺","萬立方公尺","公尺","公尺","萬立方公尺","%"]
+titleList = ["集水區降雨量","進水量","出水量","與昨日水位差","水位","有效蓄水量","蓄水量百分比"]
+webURL = "https://fhy.wra.gov.tw/reservoirpage_2011/storagecapacity.aspx?fbclid=IwAR0Umtyt_LvN6dMNeH5SKTsXTB0XyTUA974FClxePe8pLD-grqizWg5Gu1Y"
+
+class Window:
+    def __init__(self, title='Water Reservoir Crawling System', geometry='320x320'):
+        # open a window
+        self.root = tk.Tk()
+        self.root.title(title)
+        self.root.geometry(geometry)
+
+        tk.Label(self.root, text = "Select Water Reservoir Name").pack()
+        # name list
+        self.nameBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.nameBox["values"] = nameList
+        self.nameBox.current(3)
+        self.nameBox.pack()
+
+        tk.Label(self.root, text = "Select Plot Variable").pack()
+        # choice list
+        self.choiceBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.choiceBox["values"] =  [a +'（'+ b +'）' for a, b in zip(titleList, unitList)]
+        self.choiceBox.current(6)
+        self.choiceBox.pack()
+
+        tk.Label(self.root, text = "Select Start Date").pack()
+        # start year list
+        self.startYearBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.startYearBox["values"] = yearList
+        self.startYearBox.current(1)
+        self.startYearBox.pack()
+        # start month list
+        self.startMonthBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.startMonthBox["values"] = monthList
+        self.startMonthBox.current(6)
+        self.startMonthBox.pack()
+        # start day list
+        self.startDayBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.startDayBox["values"] = dayList
+        self.startDayBox.current(0)
+        self.startDayBox.pack()
+
+        tk.Label(self.root, text = "Select End Date").pack()
+        # end year list
+        self.endYearBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.endYearBox["values"] = yearList
+        self.endYearBox.current(1)
+        self.endYearBox.pack()
+        # end month list
+        self.endMonthBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.endMonthBox["values"] = monthList
+        self.endMonthBox.current(7)
+        self.endMonthBox.pack()
+        # end day list
+        self.endDayBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
+        self.endDayBox["values"] = dayList
+        self.endDayBox.current(0)
+        self.endDayBox.pack()
+
+        # close the window
+        self.search_button = tk.Button(self.root, text = 'Search', command=self.quit)
+        self.search_button.pack()
+
+        self.root.mainloop()
+
+    def quit(self):
+        self.name = self.nameBox.get()
+        self.startDate = date(int(self.startYearBox.get()), int(self.startMonthBox.get()), int(self.startDayBox.get()))
+        self.endDate = date(int(self.endYearBox.get()), int(self.endMonthBox.get()), int(self.endDayBox.get())) 
+        self.choice = self.choiceBox.current()
+        self.root.destroy()
 
 
-class Reservoir_data():
-  webURL = "https://fhy.wra.gov.tw/reservoirpage_2011/storagecapacity.aspx?fbclid=IwAR0Umtyt_LvN6dMNeH5SKTsXTB0XyTUA974FClxePe8pLD-grqizWg5Gu1Y"
-
-  def __init__(self):
-    # driver setup
-    self.options = webdriver.ChromeOptions()
-    self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    self.driver = webdriver.Chrome(options=self.options)
-    self.driver.get(Reservoir_data.webURL)
-    self.driver.set_window_size(320,180)
+class Reservoir_crawing_system():
+    def __init__(self):
+        # driver setup
+        self.options = webdriver.ChromeOptions()
+        self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        # self.options.add_argument('headless')
+        self.driver = webdriver.Chrome(options=self.options)
+        self.driver.get(webURL)
+        self.driver.set_window_size(320,180)
   
-  def refresh(self):
-    self.driver.get(Reservoir_data.webURL)
+    def refresh(self):
+        self.driver.get(webURL)
 
-  def exit(self):
-    self.driver.quit()
+    def exit(self):
+        self.driver.quit()
 
-  def crawl(self, reservoir_name, date):
-    '''
-    reservoir  format: "XXX水庫"
-    date        format: tuple/set/list (YYYY, MM, DD), and the numbers shouldn't contain leading zero!!!!
-    '''
+    def crawl_reservoir_names(self):
+        table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
+        trlist = table.find_elements_by_tag_name('tr')[2:-1]
+        namelist = []
+        for row in trlist:
+            namelist.append(row.find_elements_by_tag_name('td')[0].text)
     
-    # #select search domain: 所有水庫
-    # self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_cboSearch")).select_by_visible_text('所有水庫')
-    # time.sleep(0.5)
+        return namelist
 
-    #select year
-    self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboYear")).select_by_visible_text(str(date[0]))
-    #select month
-    self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboMonth")).select_by_visible_text(str(date[1]))
-    #select day
-    self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboDay")).select_by_visible_text(str(date[2]))
+    def print_entire_table(self, _date):
+        #select year
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboYear")).select_by_visible_text(str(_date.year))
+        #select month
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboMonth")).select_by_visible_text(str(_date.month))
+        #select day
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboDay")).select_by_visible_text(str(_date.day))
 
-    #search and wait a second (literally)
-    self.driver.find_element(By.ID, "ctl00_cphMain_btnQuery").click()
-    time.sleep(0.3)
+        #search and wait a second (literally)
+        self.driver.find_element(By.ID, "ctl00_cphMain_btnQuery").click()
+        time.sleep(0.5)
 
-    '''印出所有水庫的資料
-    self.table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
-    self.trlist = self.table.find_elements_by_tag_name('tr')[:-1]
-    for row in self.trlist:
-      self.tdlist = row.find_elements_by_tag_name('td')
-      for col in self.tdlist:
-        print(col.text + '\t',end='')
-      print('\n')
-    # 印出所有水庫的資料'''
-
-    # '''return 個別水庫的資料
-    self.table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
-    self.reservoir = self.table.find_element_by_xpath('//tr[contains(.,"'+ reservoir_name +'")]').find_elements_by_tag_name('td')
-    
-    self.data = []
-    for col in self.reservoir: 
-      self.data.append(col.text)
-
-    return self.data
-    # return 個別水庫的資料'''
-
-def data_generator(name, year, month, choice):  
-  #choice is from 1 to 7.
-  
-  data = []  
-  days = calendar.monthrange(year, month)[1]
-  original = Reservoir_data()
-
-  for day in range(1, days + 1):
-    successor = original.crawl(name, (year, month, day))
-    time.sleep(0.5)
-    del successor[0:3]
-    del successor[4]
-    successor[choice - 1] = successor[choice - 1].replace(",", "").replace("%","")
-    data.append(float(successor[choice - 1]))
-
-  return data
-
-unit_list = ["毫米","萬立方公尺","萬立方公尺","公尺","公尺","萬立方公尺","%"]
-title_list = ["集水區降雨量","進水量","出水量","與昨日水位差","水位","有效蓄水量","蓄水量百分比"]
+        table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
+        trlist = table.find_elements_by_tag_name('tr')[:-1]
+        for row in trlist:
+            tdlist = row.find_elements_by_tag_name('td')
+            for col in tdlist:
+                print(col.text + '\t',end='')
+        print('\n')
 
 
+    def crawl_single_reservoir(self, _date):
+        #select year
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboYear")).select_by_visible_text(str(_date.year))
+        #select month
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboMonth")).select_by_visible_text(str(_date.month))
+        #select day
+        self.dropdown = Select(self.driver.find_element(By.ID, "ctl00_cphMain_ucDate_cboDay")).select_by_visible_text(str(_date.day))
 
-name = input("Name: ")
-year = input("Year: ")
-month = input("Month: ")
+        #search and wait a second (literally)
+        self.driver.find_element(By.ID, "ctl00_cphMain_btnQuery").click()
+        time.sleep(0.5)
 
-print('|choice | 資料種類')
-for i in range(7):
-  print('|     {} | {}({})'.format(i+1, title_list[i], unit_list[i]))
+        table = self.driver.find_element_by_id('ctl00_cphMain_gvList')
+        reservoir = table.find_element_by_xpath('//tr[contains(.,"'+ self.window.name +'")]').find_elements_by_tag_name('td')
+        data = []
+        for col in reservoir: 
+            data.append(col.text)
 
-choice = input("Choice: ")
+        return data
 
-year = int(year)
-month = int(month)
-choice = int(choice)
-data = data_generator(name, year, month, choice)
-x = [i + 1 for i in range(calendar.monthrange(year, month)[1])]
 
-plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']
-plt.rcParams['axes.unicode_minus'] = False
-plt.title(name + " {}年{}月 每日{}({})".format(year, month, title_list[choice-1], unit_list[choice-1]))
-plt.xlabel("天")
-plt.ylabel("{}({})".format(title_list[choice-1], unit_list[choice-1]))
-plt.plot(x, data)
-plt.show()
+    def data_generator(self):  
+
+        def daterange(date1, date2):
+            for n in range(int((date2 - date1).days)+1):
+                yield date1 + timedelta(n)
+        
+        data = []
+        for _date in daterange(self.window.startDate, self.window.endDate):
+            successor = self.crawl_single_reservoir(_date)
+            time.sleep(0.5)
+            del successor[0:3]
+            del successor[4]
+            data.append(float(successor[self.window.choice].replace(",", "").replace("%","") ))
+
+        print('Data Crawling Process Finish')
+        self.exit()
+        return data
+
+    def Plot(self):
+        # GUI setup
+        self.window = Window()
+        data = self.data_generator()
+        abscissa = [i + 1 for i in range(len(data))]
+
+        plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']
+        plt.rcParams['axes.unicode_minus'] = False
+        plt.title("{} 至 {}\n {}：每日{}（{}）".format(    self.window.startDate.strftime('%Y/%m/%d'),
+                                                        self.window.endDate.strftime('%Y/%m/%d'), self.window.name,
+                                                        titleList[self.window.choice], unitList[self.window.choice]))
+        plt.xlabel("天")
+        plt.ylabel("{}({})".format(titleList[self.window.choice], unitList[self.window.choice]))
+        plt.plot(abscissa, data)
+        plt.show()
+
+
+TestA = Reservoir_crawing_system()
+
+TestA.Plot()
