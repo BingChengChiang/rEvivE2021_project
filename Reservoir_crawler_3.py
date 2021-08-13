@@ -17,6 +17,7 @@ from matplotlib.font_manager import FontProperties
 import tkinter as tk
 from tkinter import ttk
 from datetime import date, timedelta
+from tqdm import tqdm
 
 nameList = ['石門水庫', '翡翠水庫', '寶山第二水庫', '永和山水庫', '明德水庫', '鯉魚潭水庫', '德基水庫', '石岡壩', '霧社水庫', '日月潭水庫', '集集攔河堰', '湖山水庫', '仁義潭水庫', '白河水庫', '烏山頭水庫', '曾文水庫', '南化水庫', '阿公店水庫', '高屏溪攔河堰', '牡丹水庫']
 dayList = [i + 1 for i in range(31)]
@@ -100,7 +101,7 @@ class Reservoir_crawing_system():
         # driver setup
         self.options = webdriver.ChromeOptions()
         self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        # self.options.add_argument('headless')
+        self.options.add_argument('headless')
         self.driver = webdriver.Chrome(options=self.options)
         self.driver.get(webURL)
         self.driver.set_window_size(320,180)
@@ -167,16 +168,18 @@ class Reservoir_crawing_system():
         def daterange(date1, date2):
             for n in range(int((date2 - date1).days)+1):
                 yield date1 + timedelta(n)
-        
+       
         data = []
+        progress = tqdm(total=(self.window.endDate - self.window.startDate).days+1)
         for _date in daterange(self.window.startDate, self.window.endDate):
             successor = self.crawl_single_reservoir(_date)
             time.sleep(0.5)
             del successor[0:3]
             del successor[4]
             data.append(float(successor[self.window.choice].replace(",", "").replace("%","") ))
+            progress.update(1)
 
-        print('Data Crawling Process Finish')
+        print('\nData Crawling Process Finish')
         self.exit()
         return data
 
