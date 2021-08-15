@@ -28,59 +28,38 @@ titleList = ["集水區降雨量","進水量","出水量","與昨日水位差","
 webURL = "https://fhy.wra.gov.tw/reservoirpage_2011/storagecapacity.aspx?fbclid=IwAR0Umtyt_LvN6dMNeH5SKTsXTB0XyTUA974FClxePe8pLD-grqizWg5Gu1Y"
 
 class Window:
+    class SelectBox():
+        def __init__(self, root, _list, init):
+            self.Box=ttk.Combobox(root,textvariable=tk.StringVar()) 
+            self.Box["values"] = _list
+            self.Box.current(init)
+            self.Box.pack()
+
     def __init__(self, title='Water Reservoir Crawling System', geometry='320x320'):
         # open a window
         self.root = tk.Tk()
         self.root.title(title)
         self.root.geometry(geometry)
 
-        tk.Label(self.root, text = "Select Water Reservoir Name").pack()
         # name list
-        self.nameBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.nameBox["values"] = nameList
-        self.nameBox.current(3)
-        self.nameBox.pack()
+        tk.Label(self.root, text = "Select Water Reservoir Name").pack()
+        self.nameBox = self.SelectBox(self.root, nameList, 3)
 
-        tk.Label(self.root, text = "Select Plot Variable").pack()
         # choice list
-        self.choiceBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.choiceBox["values"] =  [a +'（'+ b +'）' for a, b in zip(titleList, unitList)]
-        self.choiceBox.current(6)
-        self.choiceBox.pack()
+        tk.Label(self.root, text = "Select Plot Variable").pack()
+        self.choiceBox = self.SelectBox(self.root, [a +'（'+ b +'）' for a, b in zip(titleList, unitList)], 6)
 
+        # start year/month/day list
         tk.Label(self.root, text = "Select Start Date").pack()
-        # start year list
-        self.startYearBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.startYearBox["values"] = yearList
-        self.startYearBox.current(1)
-        self.startYearBox.pack()
-        # start month list
-        self.startMonthBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.startMonthBox["values"] = monthList
-        self.startMonthBox.current(6)
-        self.startMonthBox.pack()
-        # start day list
-        self.startDayBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.startDayBox["values"] = dayList
-        self.startDayBox.current(0)
-        self.startDayBox.pack()
+        self.startYearBox = self.SelectBox(self.root, yearList, 1)
+        self.startMonthBox = self.SelectBox(self.root, monthList, 6)
+        self.startDayBox = self.SelectBox(self.root, dayList, 0)
 
+        # end year/month/day list
         tk.Label(self.root, text = "Select End Date").pack()
-        # end year list
-        self.endYearBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.endYearBox["values"] = yearList
-        self.endYearBox.current(1)
-        self.endYearBox.pack()
-        # end month list
-        self.endMonthBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.endMonthBox["values"] = monthList
-        self.endMonthBox.current(7)
-        self.endMonthBox.pack()
-        # end day list
-        self.endDayBox=ttk.Combobox(self.root,textvariable=tk.StringVar()) 
-        self.endDayBox["values"] = dayList
-        self.endDayBox.current(0)
-        self.endDayBox.pack()
+        self.endYearBox = self.SelectBox(self.root, yearList, 1)
+        self.endMonthBox = self.SelectBox(self.root, monthList, 7)
+        self.endDayBox = self.SelectBox(self.root, dayList, 0)
 
         # close the window
         self.search_button = tk.Button(self.root, text = 'Search', command=self.quit)
@@ -89,10 +68,10 @@ class Window:
         self.root.mainloop()
 
     def quit(self):
-        self.name = self.nameBox.get()
-        self.startDate = date(int(self.startYearBox.get()), int(self.startMonthBox.get()), int(self.startDayBox.get()))
-        self.endDate = date(int(self.endYearBox.get()), int(self.endMonthBox.get()), int(self.endDayBox.get())) 
-        self.choice = self.choiceBox.current()
+        self.name = self.nameBox.Box.get()
+        self.startDate = date(int(self.startYearBox.Box.get()), int(self.startMonthBox.Box.get()), int(self.startDayBox.Box.get()))
+        self.endDate = date(int(self.endYearBox.Box.get()), int(self.endMonthBox.Box.get()), int(self.endDayBox.Box.get())) 
+        self.choice = self.choiceBox.Box.current()
         self.root.destroy()
 
 
